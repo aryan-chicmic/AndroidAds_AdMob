@@ -39,14 +39,16 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.rewarded.RewardItem;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 
 public class AppActivity extends CocosActivity {
-static InterstitialAd mInterstitialAd;
-  private   static AppActivity appActivity;
+    static   RewardedAd rewardedAd;
+    private   static AppActivity appActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,81 +64,82 @@ static InterstitialAd mInterstitialAd;
         SDKWrapper.shared().init(this);
 
     }
-public  void loadAd(){
-    this.runOnUiThread(() -> {
-        AdRequest adRequest = new AdRequest.Builder().build();
-//            appActivity=new AppActivity();
-        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712", adRequest,
-                new InterstitialAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        // The mInterstitialAd reference will be null until
-                        // an ad is loaded.
-                        mInterstitialAd = interstitialAd;
-                        Log.i(TAG, "onAdLoaded");
-                    }
 
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        // Handle the error
-                        Log.d(TAG, loadAdError.toString());
-                        mInterstitialAd = null;
-                    }
-                });
-    });
-}
-public static void loadingAds(){
-        appActivity.loadAd();
-}
-    public static void presentAds(){
-//    AppActivity appActivity=new AppActivity();
-
-        appActivity.showad();
-    }
-public  void showad(){
-    Log.d(TAG, "showad: showad");
-    if (mInterstitialAd != null) {
-        Log.d(TAG, "showad: in if");
-    this.runOnUiThread(() -> {
-        Log.d(TAG, "runOnUI");
-        mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback(){
-
-            @Override
-            public void onAdDismissedFullScreenContent() {
-                Log.d("AdMob", "Dismissed fullscreen content callback");
-
-                mInterstitialAd = null;
-
-            }
-            @Override
-            public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                Log.d("AdMob", "Failed to show fullscreen content, error: " + adError);
-
-                mInterstitialAd = null;
-
-            }
-        });
-        Log.d(TAG, "Before calling show");
-//        Log.d(TAG, this.toString());
-//        Log.d(TAG, this.getPackageName().toString());
-//        Log.d(TAG, mInterstitialAd.toString());
-        mInterstitialAd.show(appActivity);
-//
-//
-//            Log.d(TAG, AppActivity.this.toString());
-//            mInterstitialAd.show(this);
-        });
-    }else {
-            Log.d("TAG", "The interstitial ad wasn't ready yet.");
-        }
-
-}
     @Override
     protected void onResume() {
         super.onResume();
         SDKWrapper.shared().onResume();
     }
+    public static void loadingAds(){
+        appActivity.LoadAd();
+    }
+    public static void presentAds(){
+//    AppActivity appActivity=new AppActivity();
 
+        appActivity.showAd();
+    }
+    void LoadAd(){
+        Log.d(TAG, "LoadAd: ");
+        this.runOnUiThread(() -> {
+            Log.d(TAG, "runUi: ");
+            AdRequest adRequest = new AdRequest.Builder().build();
+            RewardedAd.load(this, "ca-app-pub-3940256099942544/5224354917",
+                    adRequest, new RewardedAdLoadCallback() {
+                        @Override
+                        public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                            // Handle the error.
+                            Log.d(TAG, loadAdError.toString());
+                            rewardedAd = null;
+                        }
+
+                        @Override
+                        public void onAdLoaded(@NonNull RewardedAd ad) {
+                            rewardedAd = ad;
+                            Log.d(TAG, "Ad was loaded.");
+                        }
+                    });
+        });
+    }
+
+    public void showAd(){
+        Log.d(TAG, "showAd: ");
+        if (rewardedAd != null) {
+            Log.d(TAG, "not null: ");
+//            Activity activityContext = AppActivity.this;
+            this.runOnUiThread(() -> {
+                Log.d(TAG, "runOnUI");
+                rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        // Called when ad is dismissed.
+                        // Set the ad reference to null so you don't show the ad a second time.
+                        Log.d(TAG, "Ad dismissed fullscreen content.");
+                        rewardedAd = null;
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(AdError adError) {
+                        // Called when ad fails to show.
+                        Log.e(TAG, "Ad failed to show fullscreen content.");
+                        rewardedAd = null;
+                    }
+
+
+                });
+                rewardedAd.show(appActivity, new OnUserEarnedRewardListener() {
+                    @Override
+                    public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
+                        // Handle the reward.
+                        Log.d(TAG, "The user earned the reward.");
+                        int rewardAmount = rewardItem.getAmount();
+                        String rewardType = rewardItem.getType();
+                    }
+                });
+
+            });
+        }
+    }
     @Override
     protected void onPause() {
         super.onPause();

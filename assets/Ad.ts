@@ -1,14 +1,4 @@
-import { _decorator, Component, log, Node, sys } from "cc";
-import { Label } from "cc";
-// import Yodo1Ads from "./Yodo1Ads";
-// import { Component } from "cc";
-// import { AdMob } from "google-admob";
-// import * as google from "google-ads-ima";
-
-import { native } from "cc";
-// const { reflection } = native;
-// const AD_UNIT_ID = "ca-app-pub-3940256099942544~3347511713"; // Replace with your own Ad Unit ID
-
+import { _decorator, Component, log, Node, sys, Label, native } from "cc";
 import { NATIVE } from "cc/env";
 const { ccclass, property } = _decorator;
 

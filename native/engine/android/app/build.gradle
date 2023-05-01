@@ -106,5 +106,5 @@ dependencies {
     implementation project(':libservice')
     implementation project(':libcocos')
     implementation 'com.google.android.gms:play-services-ads:22.0.0'
-//    implementation 'com.google.android.gms:play-services-ads:22.0.0'
+    implementation 'com.google.android.gms:play-services-ads-lite:22.0.0'
 }
